@@ -12,11 +12,17 @@ export -f get_base_domain
 function run_le_container {
   local image="${1:?}"
   local name="${2:?}"
+  if [[ "$SETUP" == '3containers' ]]; then
+    docker_gen="--env NGINX_DOCKER_GEN_CONTAINER=$DOCKER_GEN_CONTAINER_NAME"
+  else
+    docker_gen=""
+  fi
   docker run -d \
     --name "$name" \
     --volumes-from $NGINX_CONTAINER_NAME \
     --volume /var/run/docker.sock:/var/run/docker.sock:ro \
     --add-host boulder:${BOULDER_IP} \
+    $docker_gen \
     --env "DEBUG=true" \
     --env "ACME_CA_URI=http://${BOULDER_IP}:4000/directory" \
     --label com.github.jrcs.letsencrypt_nginx_proxy_companion.test_suite \
