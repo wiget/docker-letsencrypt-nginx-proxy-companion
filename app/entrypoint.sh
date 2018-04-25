@@ -53,6 +53,12 @@ source /app/functions.sh
 [[ $DEBUG == true ]] && set -x
 
 if [[ "$*" == "/bin/bash /app/start.sh" ]]; then
+    acmev2_re='https://acme-.*v02\.api\.letsencrypt\.org/directory'
+    if [[ "${ACME_CA_URI:-}" =~ $acmev2_re ]]; then
+        echo "Error: ACME v2 API is not yet supported by simp_le."
+        echo "See https://github.com/zenhack/simp_le/issues/101"
+        exit 1
+    fi
     if [[ -z "$(get_self_id)" ]]; then
         echo "Error: can't get my container ID !" >&2
         exit 1
