@@ -1,6 +1,13 @@
-FROM alpine:3.7
+FROM golang:1.10-alpine AS build
 
-LABEL maintainer="Yves Blusseau <90z7oey02@sneakemail.com> (@blusseau)"
+RUN apk --no-cache add \
+        git make gcc musl-dev curl
+RUN go get github.com/jwilder/docker-gen
+WORKDIR /go/src/github.com/jwilder/docker-gen
+RUN make get-deps
+RUN make all
+
+FROM alpine:3.7
 
 ENV DEBUG=false \
     DOCKER_GEN_VERSION=0.7.4 \
@@ -16,8 +23,7 @@ RUN apk add --update \
     && rm /var/cache/apk/*
 
 # Install docker-gen
-RUN curl -L https://github.com/jwilder/docker-gen/releases/download/${DOCKER_GEN_VERSION}/docker-gen-linux-amd64-${DOCKER_GEN_VERSION}.tar.gz \
-    | tar -C /usr/local/bin -xz
+COPY --from=build /go/src/github.com/jwilder/docker-gen/docker-gen /usr/loca/bin/
 
 # Install simp_le
 COPY /install_simp_le.sh /app/install_simp_le.sh
